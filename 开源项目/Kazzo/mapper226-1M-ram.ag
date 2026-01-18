@@ -1,0 +1,64 @@
+board <- {
+	mappernum = 226,
+	cpu_rom = {
+		size_base = 0x100000,//0x10000
+		size_max = 0x200000,//0x80000
+		banksize = 0x4000//0x8000
+	},
+	ppu_rom = {
+		size_base = 0,
+		size_max = 0,
+		banksize = 0x2000
+	},
+	ppu_ramfind = false,
+	vram_mirrorfind = false
+};
+
+
+function cpu_dump(d, pagesize, banksize)
+{
+	for(local i = 0; i < pagesize-1; i++){
+		//cpu_write(d, 0x5000, 1);
+		cpu_write(d, 0x8000, 1 <<5 );
+		cpu_write(d, 0x5000, 0);
+		cpu_write(d, 0x5001, i);
+		cpu_read(d, 0x8000, 0x4000);
+	}
+	
+	cpu_write(d, 0x5000, 2);
+	cpu_write(d, 0x5001, 0xff);
+	cpu_read(d, 0xc000, 0x4000);
+}
+
+function ppu_dump(d, pagesize, banksize)
+{
+}
+
+function program_initalize(d, cpu_banksize, ppu_banksize)
+{
+	//bankÇĞ»»¿ªÆô
+	cpu_write(d, 0x5000, 2);
+	cpu_write(d, 0x5001, 0);
+	cpu_command(d, 0, 0x8000, cpu_banksize);
+	cpu_command(d, 0x02aa, 0xc000, cpu_banksize);
+	cpu_command(d, 0x0555, 0xc000, cpu_banksize);
+	
+}
+
+function cpu_transfer(d, start, end, cpu_banksize)
+{
+	cpu_write(d, 0x5000, 2);
+	for(local i = start; i < end-1; i += 1){
+		cpu_write(d, 0x5000, 2);
+		cpu_write(d, 0x5001, i);
+		cpu_program(d, 0x8000, 0x4000);
+	}
+	
+	cpu_write(d, 0x5000, 2);
+	cpu_write(d, 0x5001, 0xff);
+	cpu_program(d, 0xc000, 0x4000);
+}
+
+function ppu_transfer(d, start, end, ppu_banksize)
+{
+}
